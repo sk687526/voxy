@@ -22,7 +22,7 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 passport.use(new LocalStrategy(
-	function(firstName, password, done) {
+	function(firstName, lastName, email, password, done) {
 		console.log(firstName);
 		//Search for user
 		User.find({ where: {email: email} }).success(function(user) {
