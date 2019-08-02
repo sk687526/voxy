@@ -1,0 +1,20 @@
+{
+  "name": "fuse-backend",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "body-parser": "^1.19.0",
+    "cors": "^2.8.5",
+    "joi": "^14.3.1",
+    "mongoose": "^5.6.7",
+    "passport": "^0.4.0",
+    "passport-facebook": "^3.0.0"
+  }
+}
