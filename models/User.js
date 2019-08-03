@@ -1,33 +1,26 @@
 const Joi = require('joi');
 const mongoose = require('mongoose');
 
-const userSchema = new mongoose.Schema({
+const UserSchema = new mongoose.Schema({
   firstName: {
     type: String,
-    required: true,
-    minlength: 3,
-    maxlength: 50
+    required: true
   },
   lastName: {
-    type: String,
-    minlength: 3,
-    maxlength: 50
+    type: String
   },
   email: {
     type: String,
-    required: true,
-    maxlength: 50
+    required: true
   },
   password: {
     type: String,
-    required: true,
-    minlength: 8,
-    maxlength: 250
+    required: true
   }
 });
 
-const User = mongoose.model('user', userSchema);
+const User = mongoose.model('User', UserSchema);
 
 
 
-exports.User = User; 
+module.exports = User; 
