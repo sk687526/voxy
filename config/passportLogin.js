@@ -6,9 +6,10 @@ const bcrypt = require('bcrypt');
 const User = require('../models/User');
 
 module.exports = function(passport){
-	passport.use(
+	passport.use('login',
 		new LocalStrategy({ usernameField: 'email'}, (email, password, done) => {
 			//Match User
+			console.log("inside login");
 			User.findOne({email: email})
 			.then(user => {
 				if(!user){
@@ -28,10 +29,12 @@ module.exports = function(passport){
 		);
 
 	passport.serializeUser((user, done) => {
+		console.log("serializeUser");
 		done(null, user.id);
 	});
 
 	passport.deserializeUser((id, done) => {
+		console.log("deserializeUser");
 		User.findById(id, (err, user) => {
 			done(err, user);
 		});

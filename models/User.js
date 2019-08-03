@@ -1,7 +1,7 @@
-const Joi = require('joi');
+
 const mongoose = require('mongoose');
 
-const UserSchema = new mongoose.Schema({
+let UserSchema = new mongoose.Schema({
   firstName: {
     type: String,
     required: true
@@ -19,8 +19,13 @@ const UserSchema = new mongoose.Schema({
   }
 });
 
-const User = mongoose.model('User', UserSchema);
+//const User = mongoose.model('User', UserSchema);
+
+try {
+UserSchema = mongoose.model('User', UserSchema);
+} catch (e) {
+UserSchema = mongoose.model('User');
+}
 
 
-
-module.exports = User; 
+module.exports = UserSchema; 
