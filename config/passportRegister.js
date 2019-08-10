@@ -1,6 +1,8 @@
 const LocalStrategy = require('passport-local').Strategy;
 const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
+var jwt = require('jsonwebtoken');
+
 
 //Load user model
 const User = require('../models/User');
@@ -9,39 +11,30 @@ module.exports = function(passport){
 	passport.use('register',
 		new LocalStrategy({ usernameField: 'email', passReqToCallback: true}, async (req, email, password, done) => {
 			console.log("inside register");
-			let user;
-			try{
-			user = await User.findOne({email: email});
+
+			var secret = req.params.email;
+		   try {
+		     var payload = jwt.verify(req.params.token, secret);
+		    } catch(err) {
+		      // err
+		      return done(null, false, {message: error});
 		    }
-		    catch(err){
-		    	console.log(err);
-		    }
-			if(user){
-				console.log("user already exists");
-				return done(null, false, {message: 'user already exists'});
-			}
-			if(password !== req.body.confirmPassword){
-				console.log("password do not matches");
-				return done(null, false, {message: `passwords don't matches`});
-			}
-			if(password.length < 6 && firstName.length < 3 && lastName.length < 3 ){
-				console.log("please enter details correctly");
-				return done(null, false, {message: 'please enter details correctly'});
-			}
 
-		    user = new User({
-		  	firstName: req.body.firstName,
-		  	lastName: req.body.lastName,
-		  	email: email,
-		  	password: password
-		  });
+		   console.log(payload);
 
-		  const salt = await bcrypt.genSalt(10);
-		  user.password = await bcrypt.hash(user.password, salt);
+		   user = new User({
+		        firstName: payload.firstName,
+		        lastName: payload.lastName,
+		        email: payload.email,
+		        password: payload.password
+		      });
 
-		  await user.save();
-		  return done(null, user);
+		      const salt = await bcrypt.genSalt(10);
+		      user.password = await bcrypt.hash(user.password, salt);
 
+		      await user.save();
+		      return done(null, user);
+					
 		})
 		);
 

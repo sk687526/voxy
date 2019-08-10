@@ -1,13 +1,14 @@
 const express = require('express');
 const jwt = require('jwt-simple');
+var nodemailer = require('nodemailer');
 const mongoose = require('mongoose');
 const User = require('../models/User');
-var nodemailer = require('nodemailer');
+
 const router = express.Router();
 
 router.get('/forgotpassword', (req, res) => {
     res.send('<form action="/user/passwordreset" method="POST">' +
-        '<input type="email" name="email" value="" placeholder="Enter your email address..." />' +
+        '<input type="email" name="email" value="" placeholder="Enter your email address..." /><br>' +
         '<input type="submit" value="Reset Password" />' +
     '</form>');
 });
@@ -43,28 +44,30 @@ router.post('/passwordreset', async(req, res) => {
 
         // TODO: Send email containing link to reset password.
         var transporter = nodemailer.createTransport({
-			 host: 'smtp.gmail.com',
-		    port: 587,
+			 host: process.env.HOST,
+		    port: process.env.PORT,
 		    secure: false,
 		    requireTLS: true,
 		    auth: {
-		        user: 'salman.k@aspirehive.com',
-		        pass: 'ieytblbhplvduysb'
+		        user: process.env.USER,
+		        pass: process.env.PASS
 		    }
 			});
-
+            const url = `${process.env.DOMAIN}/user/resetpassword/${payload.id}/${token}`;
 			var mailOptions = {
-			  from: 'salman.k@aspirehive.com',
+			  from: process.env.USER,
 			  to: email,
 			  subject: 'Password reset link',
-			  text: '<a href="/user/resetpassword/' + payload.id + '/' + token + '">Reset password</a>'
+			  html: `<html><a href="${url}">Reset password</a></html>`
 			};
-
+            console.log("'user/resetpassword/' + payload.id + '/' + token");
 			transporter.sendMail(mailOptions, (error, info) => {
 			  if (error) {
 			    console.log("sending error:" + error);
+                res.send(error);
 			  } else {
 			    console.log('Email sent: ' + info.response);
+                res.send(info.response);
 			  }
 			});
 		    } else {
@@ -92,10 +95,10 @@ router.get('/resetpassword/:id/:token', async(req, res) => {
     // TODO: Gracefully handle decoding issues.
     // Create form to reset password.
     res.send('<form action="/user/resetpassword" method="POST">' +
-        '<input type="hidden" name="id" value="' + payload.id + '" />' +
-        '<input type="hidden" name="token" value="' + req.params.token + '" />' +
-        '<input type="password" name="password" value="" placeholder="Enter your new password..." />' +
-        '<input type="password" name="confirmPassword" value="" placeholder="confirm new password..." />' +
+        '<input type="hidden" name="id" value="' + payload.id + '" /><br>' +
+        '<input type="hidden" name="token" value="' + req.params.token + '" /><br>' +
+        '<input type="password" name="password" value="" placeholder="Enter your new password..." /><br>' +
+        '<input type="password" name="confirmPassword" value="" placeholder="confirm new password..." /><br>' +
         '<input type="submit" value="Reset Password" />' +
     '</form>');
 });
