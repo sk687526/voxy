@@ -21,11 +21,9 @@ let UserSchema = new mongoose.Schema({
 
 //const User = mongoose.model('User', UserSchema);
 
-try {
+
 UserSchema = mongoose.model('User', UserSchema);
-} catch (e) {
-UserSchema = mongoose.model('User');
-}
+
 
 
 module.exports = UserSchema; 

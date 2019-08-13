@@ -3,6 +3,7 @@ var bodyParser = require('body-parser');
 const cors = require('cors');
 const mongoose = require('mongoose');
 const session = require('express-session');
+const cookieSession = require('cookie-session');
 const passport = require('passport');
 const users = require('./Routes/users');
 const forgotPassword = require('./Routes/forgotPassword');
@@ -35,6 +36,7 @@ app.use(session({
 	saveUninitialized: true
 }));
 
+
 //passport middleware
 app.use(passport.initialize());
 app.use(passport.session());
@@ -44,14 +46,12 @@ app.use('/users', users);
 app.use('/user', forgotPassword);
 
 app.get('/success', (req, res) => {
-	
 	  console.log("success");
- res.send("success");
+ res.send(req.user);
 });
 
 app.get('/failure', (req, res) => {
-	
-	  console.log("failure");
+	console.log("failure");
  res.send("failure");
 });
 

@@ -17,7 +17,7 @@ router.post('/login', (req, res, next) => {
   })(req, res, next);
 });
 
-router.get('/resetpassword/:email/:token', (req, res, next) => {
+router.get('/verifyregister/:email/:token', (req, res, next) => {
   var secret = req.params.email;
       
   var payload = jwt.verify(req.params.token, secret);
@@ -41,6 +41,7 @@ router.post('/register', async(req, res) => {
           return res.send(err);
         }
       if(user){
+        console.log(user);
         console.log("user already exists");
         return res.send("user already exists");
       }
@@ -79,13 +80,13 @@ router.post('/register', async(req, res) => {
         }
       });
 
-            const url = `${process.env.DOMAIN}/users/resetpassword/${payload.email}/${token}`;
+            const url = `${process.env.DOMAIN}/users/verifyregister/${payload.email}/${token}`;
 
       var mailOptions = {
         from: process.env.USER,
         to: req.body.email,
         subject: 'Password reset link',
-        html: `<html><a href="${url}">Reset password</a></html>`
+        html: `<html><a href="${url}">Click here to register</a></html>`
       };
 
       transporter.sendMail(mailOptions, (error, info) => {

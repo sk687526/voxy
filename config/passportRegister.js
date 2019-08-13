@@ -31,16 +31,22 @@ module.exports = function(passport){
 
 		      const salt = await bcrypt.genSalt(10);
 		      user.password = await bcrypt.hash(user.password, salt);
-
+		      try{
 		      await user.save();
+		  	  }
+		  	  catch(err) {
+		  	  	console.log(err);
+		  	  	return done(null, false, {message: err});
+		  	  };
 		      return done(null, user);
 					
-		})
-		);
+		}
+		));
+		
 
 	passport.serializeUser((user, done) => {
 		console.log("serializeUser");
-		done(null, user.id);
+		done(null, user._id);
 	});
 
 	passport.deserializeUser((id, done) => {
