@@ -15,7 +15,7 @@ module.exports = function(passport){
 			console.log(user);
 				if(!user){
 					console.log("going back");
-					return done(null, false, {message: 'the email is not registered'});
+					return done('the email is not registered');
 				}
 				console.log("not going");
 				//Match password
@@ -24,7 +24,7 @@ module.exports = function(passport){
 						console.log("matched");
 						return done(null, user);
 					}else{
-						return done(null, false, {message: 'password incorrect'});
+						return done('password incorrect');
 					}
 				});
 			})
@@ -32,7 +32,7 @@ module.exports = function(passport){
 			
 		
 
-	passport.serializeUser((user, done) => {
+	/*passport.serializeUser((user, done) => {
 		console.log("serializeUser");
 		done(null, user._id);
 	});
@@ -47,5 +47,5 @@ module.exports = function(passport){
 			done(err, user);
 		}
 		});
-	});
+	});*/
 }

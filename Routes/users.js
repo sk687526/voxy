@@ -10,11 +10,43 @@ var nodemailer = require('nodemailer');
 const router = express.Router();
 
 
-router.post('/login', (req, res, next) => {
-  passport.authenticate('login', {
-    successRedirect: '/success',
-   failureRedirect: '/failure'
-  })(req, res, next);
+router.post('/login',  (req, res) => {
+  passport.authenticate('login', 
+    /*{
+    successRedirect: '/redirect/successLogin',
+   failureRedirect: '/redirect/failureLogin'
+  })(req, res, next);*/
+   { session: false },
+    (error, user) => {
+      console.log(error);
+      if (error || !user) {
+        return res.status(400).json({ error });
+      }
+
+      /** This is what ends up in our JWT */
+      
+      var payload = {
+        firstName: user.firstName,
+        lastName: user.lastName
+        };
+        //var secret = user.email;
+
+      /** assigns payload to req.user */
+      req.login(payload, {session: false}, (error) => {
+        if (error) {
+          return res.status(400).send({ error });
+        }
+
+        /** generate a signed json web token and return it in the response */
+       const token = jwt.sign(payload, user.email, { expiresIn: '1h' });
+        console.log(user);
+        /** assign our jwt to the cookie */
+        res.cookie('accessToken', token, { httpOnly: true, secure: true });
+        res.status(200).send( {user });
+      });
+    },
+  )(req, res);
+
 });
 
 router.get('/verifyregister/:email/:token', (req, res, next) => {
@@ -24,10 +56,41 @@ router.get('/verifyregister/:email/:token', (req, res, next) => {
   req.body.email = payload.email;
   req.body.password = payload.password;
 
-  passport.authenticate('register', {
-    successRedirect: '/success',
-   failureRedirect: '/failure'
-  })(req, res, next);
+  passport.authenticate('register', 
+    /*{
+    successRedirect: '/redirect/successRegister',
+   failureRedirect: '/redirect/failureRegister'
+  })(req, res, next);*/
+   { session: false },
+    (error, user) => {
+      console.log(error);
+      if (error || !user) {
+        return res.status(400).json({ error });
+      }
+
+      /** This is what ends up in our JWT */
+      
+      var payload = {
+        firstName: user.firstName,
+        lastName: user.lastName
+        };
+        //var secret = user.email;
+
+      /** assigns payload to req.user */
+      req.login(payload, {session: false}, (error) => {
+        if (error) {
+          return res.status(400).send({ error });
+        }
+
+        /** generate a signed json web token and return it in the response */
+       const token = jwt.sign(payload, user.email, { expiresIn: '1h' });
+        console.log(user);
+        /** assign our jwt to the cookie */
+        res.cookie('accessToken', token, { httpOnly: true, secure: true });
+        res.status(200).send( {user });
+      });
+    },
+  )(req, res);
 });
 
 router.post('/register', async(req, res) => {
@@ -85,7 +148,7 @@ router.post('/register', async(req, res) => {
       var mailOptions = {
         from: process.env.USER,
         to: req.body.email,
-        subject: 'Password reset link',
+        subject: 'register link',
         html: `<html><a href="${url}">Click here to register</a></html>`
       };
 

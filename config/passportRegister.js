@@ -17,7 +17,7 @@ module.exports = function(passport){
 		     var payload = jwt.verify(req.params.token, secret);
 		    } catch(err) {
 		      // err
-		      return done(null, false, {message: error});
+		      return done(err);
 		    }
 
 		   console.log(payload);
@@ -36,7 +36,7 @@ module.exports = function(passport){
 		  	  }
 		  	  catch(err) {
 		  	  	console.log(err);
-		  	  	return done(null, false, {message: err});
+		  	  	return done(err);
 		  	  };
 		      return done(null, user);
 					
@@ -44,7 +44,7 @@ module.exports = function(passport){
 		));
 		
 
-	passport.serializeUser((user, done) => {
+	/*passport.serializeUser((user, done) => {
 		console.log("serializeUser");
 		done(null, user._id);
 	});
@@ -54,5 +54,5 @@ module.exports = function(passport){
 		User.findById(id, (err, user) => {
 			done(err, user);
 		});
-	});
+	});*/
 }
