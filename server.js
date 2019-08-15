@@ -8,7 +8,6 @@ const passport = require('passport');
 const users = require('./Routes/users');
 const forgotPassword = require('./Routes/forgotPassword');
 const socialLogin = require('./Routes/socialLogin');
-const redirect = require('./Routes/redirect');
 
 
 const app = express();
@@ -45,7 +44,6 @@ app.use(passport.session());
 app.use('/auth', socialLogin);
 app.use('/users', users);
 app.use('/user', forgotPassword);
-app.use('/redirect', redirect);
 
 
 
