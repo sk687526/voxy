@@ -23,8 +23,7 @@ module.exports = function(passport){
 		   console.log(payload);
 
 		   user = new User({
-		        firstName: payload.firstName,
-		        lastName: payload.lastName,
+		        displayName: payload.displayName,
 		        email: payload.email,
 		        password: payload.password
 		      });

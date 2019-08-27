@@ -3,6 +3,7 @@ const jwt = require('jwt-simple');
 var nodemailer = require('nodemailer');
 const mongoose = require('mongoose');
 const User = require('../models/User');
+const bcrypt = require('bcrypt');
 
 const router = express.Router();
 
@@ -33,6 +34,7 @@ router.post('/passwordreset', async(req, res) => {
             id: user._id,        // User ID from database
             email: email
         };
+        console.log(payload);
 
         // TODO: Make this a one-time-use token by using the user's
         // current password hash from the database, and combine it
@@ -45,7 +47,7 @@ router.post('/passwordreset', async(req, res) => {
         // TODO: Send email containing link to reset password.
         var transporter = nodemailer.createTransport({
 			 host: process.env.HOST,
-		    port: process.env.PORT,
+		    port: process.env.PORT_SMTP,
 		    secure: false,
 		    requireTLS: true,
 		    auth: {
@@ -60,7 +62,7 @@ router.post('/passwordreset', async(req, res) => {
 			  subject: 'Password reset link',
 			  html: `<html><a href="${url}">Reset password</a></html>`
 			};
-            console.log("'user/resetpassword/' + payload.id + '/' + token");
+            console.log(`${url}`);
 			transporter.sendMail(mailOptions, (error, info) => {
 			  if (error) {
 			    console.log("sending error:" + error);
@@ -123,7 +125,9 @@ router.post('/resetpassword', async(req, res) => {
     var secret = user.password;
 
     var payload = jwt.decode(req.body.token, secret);
-    user.password = req.body.password;
+
+     const salt = await bcrypt.genSalt(10);
+     user.password = await bcrypt.hash(req.body.password, salt);
     try{
     await user.save();
     }catch(err){
@@ -132,7 +136,7 @@ router.post('/resetpassword', async(req, res) => {
     // TODO: Gracefully handle decoding issues.
     // TODO: Hash password from
     // req.body.password
-    res.send('Your password has been successfully changed.');
+    res.redirect('http://localhost:3000/login');
 });
 
 module.exports = router;

@@ -26,8 +26,7 @@ router.post('/login',  (req, res) => {
       /** This is what ends up in our JWT */
       
       var payload = {
-        firstName: user.firstName,
-        lastName: user.lastName
+        displayName: user.displayName
         };
         //var secret = user.email;
 
@@ -71,8 +70,7 @@ router.get('/verifyregister/:email/:token', (req, res, next) => {
       /** This is what ends up in our JWT */
       
       var payload = {
-        firstName: user.firstName,
-        lastName: user.lastName
+        displayName: user.displayName
         };
         //var secret = user.email;
 
@@ -85,9 +83,12 @@ router.get('/verifyregister/:email/:token', (req, res, next) => {
         /** generate a signed json web token and return it in the response */
        const token = jwt.sign(payload, user.email, { expiresIn: '1h' });
         console.log(user);
+
         /** assign our jwt to the cookie */
-        res.cookie('accessToken', token, { httpOnly: true, secure: true });
-        res.status(200).send( {user });
+        var cookieValue = JSON.stringify({...user, accessToken: token}, { maxAge: 900000, httpOnly: true});
+        //res.cookie('accessToken', token, { httpOnly: true, secure: true });
+        res.redirect ('http://localhost:3000/login' );
+        //res.status(200).send( {user });
       });
     },
   )(req, res);
@@ -118,8 +119,7 @@ router.post('/register', async(req, res) => {
       }
 
       var payload = {
-            firstName: req.body.firstName,
-        lastName: req.body.lastName,
+            displayName: req.body.displayName,
         email: req.body.email,
         password: req.body.password
         };
