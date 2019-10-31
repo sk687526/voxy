@@ -1,9 +1,11 @@
 const express = require('express');
 const jwt = require('jwt-simple');
+const JWT = require('jsonwebtoken');
 var nodemailer = require('nodemailer');
 const mongoose = require('mongoose');
 const User = require('../models/User');
 const bcrypt = require('bcrypt');
+const querystring = require('querystring');
 
 const router = express.Router();
 
@@ -70,6 +72,7 @@ router.post('/passwordreset', async(req, res) => {
 			  } else {
 			    console.log('Email sent: ' + info.response);
                 res.send(info.response);
+                //res.redirect('http://localhost:3000/pages/auth/reset-password');
 			  }
 			});
 		    } else {
@@ -92,17 +95,32 @@ router.get('/resetpassword/:id/:token', async(req, res) => {
     // with the user's created date to make a very unique secret key!
     // For example,
     var secret = user.password;
-    var payload = jwt.decode(req.params.token, secret);
-
+    //var payload = jwt.decode(req.params.token, secret);
+    JWT.verify(req.params.token,secret,function(err,token){
+      if(err){
+        // respond to request with error
+        res.send({err});
+      }else{
+        // continue with the request
+        //req.session.cookie.token = req.params.token;
+        // res.cookie('token',req.params.token, { maxAge: 900000, httpOnly: true });
+         const query = querystring.stringify({
+          "token": req.params.token
+      });
+      res.redirect('http://localhost:3000/pages/auth/reset-password-2/?' + query);
+        
+        //res.redirect('http://localhost:3000/pages/auth/reset-password-2');
+      }
+    });
     // TODO: Gracefully handle decoding issues.
     // Create form to reset password.
-    res.send('<form action="/user/resetpassword" method="POST">' +
+    /*res.send('<form action="/user/resetpassword" method="POST">' +
         '<input type="hidden" name="id" value="' + payload.id + '" /><br>' +
         '<input type="hidden" name="token" value="' + req.params.token + '" /><br>' +
         '<input type="password" name="password" value="" placeholder="Enter your new password..." /><br>' +
         '<input type="password" name="confirmPassword" value="" placeholder="confirm new password..." /><br>' +
         '<input type="submit" value="Reset Password" />' +
-    '</form>');
+    '</form>');*/
 });
 
 router.post('/resetpassword', async(req, res) => {
@@ -113,19 +131,25 @@ router.post('/resetpassword', async(req, res) => {
     }
     let user;
 	try{
-	user = await User.findOne({_id: req.body.id});
+	user = await User.findOne({email: req.body.email});
     }
     catch(err){
     	console.log(err);
+        return res.send(err);
     }
     // TODO: Decrypt one-time-use token using the user's
     // current password hash from the database and combining it
     // with the user's created date to make a very unique secret key!
     // For example,
+    if(!user){
+        return res.status(404).json("invalid email");
+    }
     var secret = user.password;
-
+    try{
     var payload = jwt.decode(req.body.token, secret);
-
+    }catch(err){
+        return res.send("no token supplied");
+    }
      const salt = await bcrypt.genSalt(10);
      user.password = await bcrypt.hash(req.body.password, salt);
     try{
@@ -136,7 +160,7 @@ router.post('/resetpassword', async(req, res) => {
     // TODO: Gracefully handle decoding issues.
     // TODO: Hash password from
     // req.body.password
-    res.redirect('http://localhost:3000/login');
+    res.send(user);
 });
 
 module.exports = router;

@@ -17,8 +17,21 @@ module.exports = function(passport){
 		     var payload = jwt.verify(req.params.token, secret);
 		    } catch(err) {
 		      // err
-		      return done(err);
+		      return done("token expired");
 		    }
+		    let user1;
+		      try{
+		      user1 = await User.findOne({email: payload.email});
+		        }
+		        catch(err){
+		          console.log(err);
+		          return done("something went wrong");
+		        }
+		      if(user1){
+		        console.log(user1);
+		        console.log("user already exists");
+		        return done("user already exists");
+		      }
 
 		   console.log(payload);
 

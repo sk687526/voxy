@@ -4,7 +4,7 @@ const bcrypt = require('bcrypt');
 const User = require('../models/User');
 var jwt = require('jsonwebtoken');
 var nodemailer = require('nodemailer');
-
+const querystring = require('querystring');
 
 
 const router = express.Router();
@@ -17,10 +17,10 @@ router.post('/login',  (req, res) => {
    failureRedirect: '/redirect/failureLogin'
   })(req, res, next);*/
    { session: false },
-    (error, user) => {
-      console.log(error);
-      if (error || !user) {
-        return res.status(400).json({ error });
+    (err, user) => {
+      console.log(err);
+      if (err || !user) {
+        return res.status(400).json({ error: err});
       }
 
       /** This is what ends up in our JWT */
@@ -33,15 +33,42 @@ router.post('/login',  (req, res) => {
       /** assigns payload to req.user */
       req.login(payload, {session: false}, (error) => {
         if (error) {
-          return res.status(400).send({ error });
+          return res.status(400).send({ error: error });
         }
 
         /** generate a signed json web token and return it in the response */
        const token = jwt.sign(payload, user.email, { expiresIn: '1h' });
         console.log(user);
+        const obj = {
+          isLoggedIn: true,
+          data: {
+            displayName: user.displayName,
+            email: user.email,
+            username: user.username
+          },
+          accessToken: token
+        }
+        console.log(user.username);
         /** assign our jwt to the cookie */
-        res.cookie('accessToken', token, { httpOnly: true, secure: true });
-        res.status(200).send( {user });
+        req.withCredentials = true;
+        var userCookie = {
+          accessToken: token,
+          data: obj
+        }
+        var cookieString = `accessToken=${token};data=${obj};httpOnly;max-age=${60*60*24*15};SameSite=Strict;expires=`;
+        //res.cookie('user', obj.data, domain='127.0.0.1', {httpOnly: true, secure: false, expires: new Date(Date.now() + 7*24*3600000)});
+        //res.cookie('accessToken', token, domain='127.0.0.1', {httpOnly: true, secure: false, expires: new Date(Date.now() + 7*24*3600000)});
+        res.cookie('isLoggedIn', true, domain='127.0.0.1', {httpOnly: true, secure: false, expires: new Date(Date.now() + 7*24*3600000)});
+        //res.setHeader('x-access-token', token);
+        //res.setHeader('Set-Cookie', cookieString);
+        res.setHeader('Access-Control-Expose-Headers', 'Set-Cookie');
+        //res.end("s");
+        
+       /* res.writeHead(200, {
+          "Content-Type" : "text/plain",
+          "Set-Cookie" : cookieString
+        });*/
+        res.status(200).send( {obj });
       });
     },
   )(req, res);
@@ -50,8 +77,14 @@ router.post('/login',  (req, res) => {
 
 router.get('/verifyregister/:email/:token', (req, res, next) => {
   var secret = req.params.email;
-      
+    try{  
   var payload = jwt.verify(req.params.token, secret);
+  }
+  catch(err){
+    console.log("jwt expired");
+    return res.send(err);
+  }
+
   req.body.email = payload.email;
   req.body.password = payload.password;
 
@@ -64,31 +97,30 @@ router.get('/verifyregister/:email/:token', (req, res, next) => {
     (error, user) => {
       console.log(error);
       if (error || !user) {
-        return res.status(400).json({ error });
+        return res.status(400).json({ error: error });
       }
 
       /** This is what ends up in our JWT */
+      var payload1  = {
+        displayName: user.displayName,
+        email: user.email
+      }
       
-      var payload = {
-        displayName: user.displayName
-        };
         //var secret = user.email;
 
       /** assigns payload to req.user */
-      req.login(payload, {session: false}, (error) => {
+      req.login(payload1, {session: false}, (error) => {
         if (error) {
-          return res.status(400).send({ error });
+          return res.status(400).send({ error: error });
         }
 
         /** generate a signed json web token and return it in the response */
-       const token = jwt.sign(payload, user.email, { expiresIn: '1h' });
+       const token = jwt.sign(payload1, user.email, { expiresIn: '1h' });
         console.log(user);
-
+        res.cookie('accessToken', token, { httpOnly: true, secure: true });
         /** assign our jwt to the cookie */
-        var cookieValue = JSON.stringify({...user, accessToken: token}, { maxAge: 900000, httpOnly: true});
-        //res.cookie('accessToken', token, { httpOnly: true, secure: true });
-        res.redirect ('http://localhost:3000/login' );
-        //res.status(200).send( {user });
+        const query = querystring.stringify(payload1);
+      res.redirect('http://localhost:3000/apps/dashboards/analytics/?' + query);
       });
     },
   )(req, res);
@@ -107,21 +139,20 @@ router.post('/register', async(req, res) => {
       if(user){
         console.log(user);
         console.log("user already exists");
-        return res.send("user already exists");
+        return res.send({error: "user already exists"});
       }
       if(req.body.password !== req.body.confirmPassword){
         console.log("password do not matches");
-        return res.send(`passwords don't matches`);
+        return res.send({error: "passwords don't matches"});
       }
-      if(req.body.password.length < 6 && req.body.firstName.length < 3 && req.body.lastName.length < 3 ){
-        console.log("please enter details correctly");
-        return res.send('please enter details correctly');
-      }
+      console.log(req.body.password);
+     
 
       var payload = {
             displayName: req.body.displayName,
         email: req.body.email,
-        password: req.body.password
+        password: req.body.password,
+        passwordConfirm: req.body.passwordConfirm
         };
 
         // TODO: Make this a one-time-use token by using the user's
@@ -155,10 +186,10 @@ router.post('/register', async(req, res) => {
       transporter.sendMail(mailOptions, (error, info) => {
         if (error) {
           console.log("sending error:" + error);
-                return res.send(error);
+                return res.send({error: error});
         } else {
           console.log('Email sent: ' + info.response);
-                return res.send(info.response);
+                return res.send({info: info.response});
         }
       });
 
