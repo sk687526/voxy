@@ -59,6 +59,7 @@ router.post('/login',  (req, res) => {
         //res.cookie('user', obj.data, domain='127.0.0.1', {httpOnly: true, secure: false, expires: new Date(Date.now() + 7*24*3600000)});
         //res.cookie('accessToken', token, domain='127.0.0.1', {httpOnly: true, secure: false, expires: new Date(Date.now() + 7*24*3600000)});
         res.cookie('isLoggedIn', true, domain='127.0.0.1', {httpOnly: true, secure: false, expires: new Date(Date.now() + 7*24*3600000)});
+        res.cookie('email', JSON.stringify(user.email), domain='127.0.0.1', {httpOnly: true, secure: false, expires: new Date(Date.now() + 7*24*3600000)});
         //res.setHeader('x-access-token', token);
         //res.setHeader('Set-Cookie', cookieString);
         res.setHeader('Access-Control-Expose-Headers', 'Set-Cookie');
@@ -194,6 +195,45 @@ router.post('/register', async(req, res) => {
       });
 
   });
+
+router.post('/suggestions', async(req, res, next) => {
+  console.log(req.body);
+  try{  
+  var payload = jwt.verify(JSON.parse(req.body.accessToken), req.body.email);
+  }
+  catch(err){
+    console.log("jwt expired");
+    return res.status(400).send(err);
+  }
+  let users = await User.find();
+  console.log(users);
+  res.send(users); 
+});
+
+router.post('/user', async(req, res, next) => {
+  console.log(req.body.accessToken);
+  console.log(req.body.email);
+  //console.log(JSON.object(req.body));
+  try{  
+  var payload = jwt.verify(JSON.parse(req.body.accessToken), req.body.email);
+  }
+  catch(err){
+    console.log("jwt expired");
+    return res.status(400).send(err);
+  }
+  let user = await User.findOne();
+  console.log(user);
+  const obj = {
+          isLoggedIn: true,
+          data: {
+            displayName: user.displayName,
+            email: user.email,
+            username: user.username
+          },
+          accessToken: req.body.accessToken
+        }
+  res.status(200).send( {obj });
+});
 
 
 
