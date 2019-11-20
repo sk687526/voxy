@@ -58,8 +58,8 @@ router.post('/login',  (req, res) => {
         var cookieString = `accessToken=${token};data=${obj};httpOnly;max-age=${60*60*24*15};SameSite=Strict;expires=`;
         //res.cookie('user', obj.data, domain='127.0.0.1', {httpOnly: true, secure: false, expires: new Date(Date.now() + 7*24*3600000)});
         //res.cookie('accessToken', token, domain='127.0.0.1', {httpOnly: true, secure: false, expires: new Date(Date.now() + 7*24*3600000)});
-        res.cookie('isLoggedIn', true, domain='127.0.0.1', {httpOnly: true, secure: false, expires: new Date(Date.now() + 7*24*3600000), SameSite: true});
-        res.cookie('email', JSON.stringify(user.email), domain='127.0.0.1', {httpOnly: true, secure: false, expires: new Date(Date.now() + 7*24*3600000), SameSite: true});
+        res.cookie('isLoggedIn', true, domain='https://serene-hugle-0773de.netlify.com', {httpOnly: true, secure: false, expires: new Date(Date.now() + 7*24*3600000)});
+        res.cookie('email', JSON.stringify(user.email), domain='https://serene-hugle-0773de.netlify.com', {httpOnly: true, secure: false, expires: new Date(Date.now() + 7*24*3600000)});
         //res.setHeader('x-access-token', token);
         //res.setHeader('Set-Cookie', cookieString);
         res.setHeader('Access-Control-Expose-Headers', 'Set-Cookie');
