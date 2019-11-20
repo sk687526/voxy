@@ -36,20 +36,20 @@ app.use(bodyParser.json());
 app.use(cors(corsOptions));
 app.use(express.json());
 
-/*//express session
+/*express session
 app.use(session({
 	secret: process.env.SESSION_SECRET,
   resave: false,
   saveUninitialized: true,
   cookie: { secure: false }
-}));
+}));*/
 
 app.use(function(req, res, next) {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader('Access-Control-Allow-Credentials', true)
  // res.setHeader("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
   next();
-});*/
+});
 //passport middleware
 app.use(passport.initialize());
 app.use(passport.session());
