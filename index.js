@@ -26,7 +26,7 @@ mongoose.connect(process.env.MONGODB_URI,{ useNewUrlParser: true })
   .catch(err => console.error('Could not connect to MongoDB...' + err));
 
 var corsOptions = {
-  origin: 'http://localhost:3000',
+  origin: 'https://serene-hugle-0773de.netlify.com',
   credentials:  true
 }
 
